@@ -24,8 +24,9 @@ Baseline closure and discovery planning.
 - Generated repository map and metadata verification passed.
 - Fresh checkpoint/resume recovered this state with a matching HEAD.
 - Metadata committed as `bb6a65d4b7` after review.
-- Local and `origin/icbb/plane` SHA verified as
-  `41ec618fb24080fadce7e6d1a0f90092cf691f11`.
+- Baseline closure commit SHA is local
+  `94a822522da62a9d097dd20094c493409e5626d0`; `origin/icbb/plane` remains at
+  the prior verified SHA `41ec618fb24080fadce7e6d1a0f90092cf691f11`.
 - Initial fork baseline recorded as
   `3478d4fac44ca67db5233065f9a21f8817eb763b`.
 - Read-only `upstream/preview` base recorded as
@@ -63,6 +64,8 @@ deferred because the current upstream base is ahead of the fork baseline.
 - Metadata verification from clean committed state: PASS (`VERIFICATION: PASS`).
 - Baseline registry/manifest state: PASS; fork base and current upstream base
   are recorded separately.
+- Remote baseline closure: PENDING; the new metadata commit is local-ahead and
+  has not been pushed.
 - Repository-native source tests: NOT RUN; no source files changed.
 - V2 workflow verification: PASS (`VERIFICATION: PASS`).
 - Metadata secret scan: PASS with profile scope `metadata`.
@@ -72,8 +75,8 @@ deferred because the current upstream base is ahead of the fork baseline.
 ## Exact Next Action
 
 Review `docs/icbb/plans/2026-08-28-plane-icbb-customization-discovery.md`,
-select the first ICBB use case, and create an implementation plan before any
-source change or upstream sync.
+select the first ICBB use case, and request explicit approval before pushing
+the new baseline metadata commit or making any source change.
 
 ## Plan
 
