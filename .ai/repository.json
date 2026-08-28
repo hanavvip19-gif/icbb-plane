@@ -12,6 +12,9 @@
   "vendor_branch": "preview",
   "customization_branch": "icbb/plane",
   "operations_repository": "/home/usman/projects/platform/plane",
+  "initial_fork_baseline_sha": "3478d4fac44ca67db5233065f9a21f8817eb763b",
+  "current_upstream_base_sha": "4a6f9edff6aee2dd1099f3ba7d1362aca8ea6826",
+  "current_upstream_base_observed_at": "2026-08-28T15:25:56Z",
   "last_synced_sha": "3478d4fac44ca67db5233065f9a21f8817eb763b",
   "metadata_boundary": {
     "versioned": [

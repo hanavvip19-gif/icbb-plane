@@ -2,16 +2,16 @@
 
 ## Active Task
 
-Task 8 — final metadata review complete; push approval is pending.
+Task 11 — V2 bootstrap baseline closed; Plane ICBB customization discovery is active.
 
 ## Current Objective
 
-Validate isolated V2 context, state, manifest, profile, and generated/local
-boundaries without changing vendor source or the preserved `AGENTS.md`.
+Define safe Plane ICBB customization boundaries without changing vendor source,
+deployment, or the preserved `AGENTS.md`.
 
 ## Current Phase
 
-Pilot verification and review gate.
+Baseline closure and discovery planning.
 
 ## Completed
 
@@ -24,16 +24,25 @@ Pilot verification and review gate.
 - Generated repository map and metadata verification passed.
 - Fresh checkpoint/resume recovered this state with a matching HEAD.
 - Metadata committed as `bb6a65d4b7` after review.
+- Local and `origin/icbb/plane` SHA verified as
+  `41ec618fb24080fadce7e6d1a0f90092cf691f11`.
+- Initial fork baseline recorded as
+  `3478d4fac44ca67db5233065f9a21f8817eb763b`.
+- Read-only `upstream/preview` base recorded as
+  `4a6f9edff6aee2dd1099f3ba7d1362aca8ea6826` at
+  `2026-08-28T15:25:56Z`; no sync performed.
+- Plane ICBB discovery plan created under `docs/icbb/plans/`.
 
 ## In Progress
 
-No source files are in play. The committed metadata is ready for review before
-the separate push approval gate.
+No source files are in play. Discovery is limited to architecture, integration
+points, deployment implications, and upstream-sync risk.
 
 ## Blockers
 
-Repository-native verification is deferred until the pilot activates the
-profile. Commit and push remain review-gated.
+Repository-native source tests and source implementation are deferred until a
+reviewed ICBB use case and implementation plan exist. Upstream sync remains
+deferred because the current upstream base is ahead of the fork baseline.
 
 ## Files In Play
 
@@ -52,6 +61,8 @@ profile. Commit and push remain review-gated.
 - Fork identity, branch, remotes, and clean pre-bootstrap tree: PASS.
 - Baseline re-verification: PASS; fork HEAD exactly matches the initial SHA.
 - Metadata verification from clean committed state: PASS (`VERIFICATION: PASS`).
+- Baseline registry/manifest state: PASS; fork base and current upstream base
+  are recorded separately.
 - Repository-native source tests: NOT RUN; no source files changed.
 - V2 workflow verification: PASS (`VERIFICATION: PASS`).
 - Metadata secret scan: PASS with profile scope `metadata`.
@@ -60,8 +71,9 @@ profile. Commit and push remain review-gated.
 
 ## Exact Next Action
 
-After explicit approval, push with:
-`git -C /home/usman/projects/platform/plane-fork push origin icbb/plane`
+Review `docs/icbb/plans/2026-08-28-plane-icbb-customization-discovery.md`,
+select the first ICBB use case, and create an implementation plan before any
+source change or upstream sync.
 
 ## Plan
 
