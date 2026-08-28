@@ -1,0 +1,30 @@
+{
+  "schema_version": "v2",
+  "repository_id": "plane-fork",
+  "role": "development-fork",
+  "local_path": "/home/usman/projects/platform/plane-fork",
+  "branch": "icbb/plane",
+  "fork_owner": "hanavvip19-gif",
+  "fork_repository": "hanavvip19-gif/icbb-plane",
+  "origin": "git@github.com:hanavvip19-gif/icbb-plane.git",
+  "upstream": "https://github.com/makeplane/plane.git",
+  "upstream_push_policy": "fetch-only",
+  "vendor_branch": "preview",
+  "customization_branch": "icbb/plane",
+  "operations_repository": "/home/usman/projects/platform/plane",
+  "last_synced_sha": "3478d4fac44ca67db5233065f9a21f8817eb763b",
+  "metadata_boundary": {
+    "versioned": [
+      "PROJECT_CONTEXT.md",
+      "WORKSTATE.md",
+      ".ai/",
+      "docs/icbb/plans/"
+    ],
+    "generated": [".generated/REPO_MAP.json"],
+    "local": [".agents/checkpoints/"]
+  },
+  "agent_adapters": {
+    "AGENTS.md": "vendor-preserved",
+    "CLAUDE.md": "symlink:PROJECT_CONTEXT.md"
+  }
+}

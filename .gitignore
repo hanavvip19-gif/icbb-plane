@@ -102,6 +102,13 @@ dev-editor
 storybook-static
 
 CLAUDE.md
+!CLAUDE.md
+
+# AI Knowledge Workflow V2 generated and local state
+/.agents/checkpoints/*
+!/.agents/checkpoints/.gitkeep
+/.generated/*
+!/.generated/.gitkeep
 
 build/
 .react-router/

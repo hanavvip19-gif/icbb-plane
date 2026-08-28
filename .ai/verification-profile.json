@@ -1,0 +1,24 @@
+{
+  "schema_version": "v2",
+  "profile_id": "plane-fork",
+  "repository_id": "plane-fork",
+  "scope": "fork-metadata-and-source",
+  "upstream_branch": "preview",
+  "secret_scan_scope": "metadata",
+  "agent_adapters": {
+    "AGENTS.md": "vendor-preserved",
+    "CLAUDE.md": "symlink:PROJECT_CONTEXT.md"
+  },
+  "required_checks": [
+    "git-diff-check",
+    "agent-symlink-targets",
+    "metadata-json-valid",
+    "repo-map-json-valid",
+    "no-secret-patterns"
+  ],
+  "deferred_checks": [
+    "repository-native-tests",
+    "upstream-sync-fixture"
+  ],
+  "status": "not-run"
+}
