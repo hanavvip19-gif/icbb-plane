@@ -2,82 +2,82 @@
 
 ## Active Task
 
-Task 11 — V2 bootstrap/baseline closure fully complete; Plane ICBB customization discovery is active.
+PLAT-11 — Plane ICBB in-place fork image cutover planning. The approved architecture is being promoted into repository SPEC and implementation plan before any runtime mutation.
 
 ## Current Objective
 
-Define safe Plane ICBB customization boundaries without changing vendor source,
-deployment, or the preserved `AGENTS.md`.
+Establish the authoritative repository contract for building SHA-traceable Plane ICBB application images from `icbb/plane` and cutting the existing `/home/usman/projects/platform/plane` runtime over in place without creating or replacing its persistent data stack.
 
 ## Current Phase
 
-Baseline closure and discovery planning.
+Approved architecture -> repository SPEC/implementation plan -> Ready for Agent preflight.
 
 ## Completed
 
-- True GitHub fork verified as `hanavvip19-gif/icbb-plane`.
-- Local branch `icbb/plane` created from `preview`.
-- `origin` points to the ICBB fork and `upstream` is fetch-only.
-- Initial vendor baseline is `3478d4fac44ca67db5233065f9a21f8817eb763b`.
-- Existing vendor `AGENTS.md` preserved by approved adapter exception.
-- V2 metadata is present without source-tree changes.
-- Generated repository map and metadata verification passed.
-- Fresh checkpoint/resume recovered this state with a matching HEAD.
-- Metadata committed as `bb6a65d4b7` after review.
-- Initial baseline closure commit was `94a822522da62a9d097dd20094c493409e5626d0`.
-- Baseline closure metadata is now pushed to `origin/icbb/plane`; final local
-  and remote alignment is verified after the state update.
-- Initial fork baseline recorded as
-  `3478d4fac44ca67db5233065f9a21f8817eb763b`.
-- Read-only `upstream/preview` base recorded as
-  `4a6f9edff6aee2dd1099f3ba7d1362aca8ea6826` at
-  `2026-08-28T15:25:56Z`; no sync performed.
-- Plane ICBB discovery plan created under `docs/icbb/plans/`.
+- True development fork verified as `hanavvip19-gif/icbb-plane`.
+- Customization branch verified as `icbb/plane`.
+- Operations/deployment repository remains `/home/usman/projects/platform/plane` / `hanavvip19-gif/platform-plane`.
+- V2 bootstrap/baseline closure remains complete.
+- Existing discovery plan remains available at `docs/icbb/plans/2026-08-28-plane-icbb-customization-discovery.md`.
+- Connector grounding on 2026-09-10 passed for Obsidian Knowledge, Plane ICBB, and GitHub.
+- Durable architecture decision recorded in Obsidian as `AI Development/Plane ICBB Decision Log.md`, status `APPROVED ARCHITECTURE DECISION — 2026-09-10`.
+- Plane execution item created as `PLAT-11` — `Plane ICBB — in-place fork image cutover`.
+- Repository grounding read `PROJECT_CONTEXT.md`, this `WORKSTATE.md`, `.ai/repository.json`, `.ai/verification-profile.json`, the Plane ICBB discovery plan, and the operations repository README/local-deployment plan.
+- Design-time source HEAD before this documentation commit was `3846cfda7efc99fa5cc8c6beafc70df8ddf6e99e`.
+- Design-time operations HEAD was `76b6bd098112521ff7885f9898d488c4c3016764`.
+- Approved cutover design is prepared at `docs/icbb/specs/2026-09-10-plane-icbb-in-place-image-cutover-design.md`.
+- Executor-ready implementation plan is prepared at `docs/icbb/plans/2026-09-10-plane-icbb-in-place-image-cutover.md`.
 
 ## In Progress
 
-No source files are in play. Discovery is limited to architecture, integration
-points, deployment implications, and upstream-sync risk.
+Commit and verify the approved SPEC, implementation plan, and this workstate as one documentation-only repository change. No Plane source file or live runtime is being changed by this planning commit.
 
 ## Blockers
 
-No bootstrap blocker remains. Repository-native source tests, source
-implementation, and upstream sync remain deferred until a reviewed ICBB use
-case and implementation plan exist.
+No architecture/planning blocker remains once the documentation commit is verified.
+
+Runtime cutover remains gated by all of the following:
+
+- executor Task 1 read-only preflight PASS;
+- clean exact target `icbb/plane` SHA;
+- empty migration delta under `apps/api/plane/db/migrations/`;
+- captured persistent-resource and logical-data baseline;
+- successful SHA-labelled application image builds and source verification;
+- verified non-secret operations Compose override;
+- known-good rollback image references and fresh backup checkpoint;
+- explicit human approval immediately before live application-container recreation.
+
+Any non-empty migration delta or unexpected persistent-service/volume difference is `DECISION REQUIRED` and must stop the cutover.
 
 ## Files In Play
 
-- `PROJECT_CONTEXT.md`
+- `docs/icbb/specs/2026-09-10-plane-icbb-in-place-image-cutover-design.md`
+- `docs/icbb/plans/2026-09-10-plane-icbb-in-place-image-cutover.md`
 - `WORKSTATE.md`
-- `.ai/repository.json`
-- `.ai/verification-profile.json`
-- `.gitignore`
-- `CLAUDE.md`
-- `docs/icbb/plans/.gitkeep`
-- `.agents/checkpoints/.gitkeep`
-- `.generated/.gitkeep`
+
+No Plane source files, deployment secrets, generated `plane-app/` files, persistent volumes, or live containers are in play in this planning commit.
 
 ## Verification State
 
-- Fork identity, branch, remotes, and clean pre-bootstrap tree: PASS.
-- Baseline re-verification: PASS; fork HEAD exactly matches the initial SHA.
-- Metadata verification from clean committed state: PASS (`VERIFICATION: PASS`).
-- Baseline registry/manifest state: PASS; fork base and current upstream base
-  are recorded separately.
-- Origin alignment: PASS; final local and `origin/icbb/plane` SHAs match.
-- Repository-native source tests: NOT RUN; no source files changed.
-- V2 workflow verification: PASS (`VERIFICATION: PASS`).
-- Metadata secret scan: PASS with profile scope `metadata`.
-- Fresh-shell resume: PASS; checkpoint HEAD comparison MATCH.
-- Final git status: clean.
+- Obsidian connector/read/write: PASS.
+- Plane ICBB workspace/project/work-item reads: PASS.
+- GitHub repository/branch/file reads: PASS.
+- Superpowers `writing-plans` methodology: applied.
+- Approved architecture decision -> repository design coverage: prepared; final branch verification pending this commit.
+- Implementation plan covers preflight, build provenance, operations override, backup/rollback, live cutover, data continuity, licensing boundary, verification, rollback, tracking sync, and durable learning promotion.
+- Repository-native Plane source tests: NOT RUN; no source code is changed by this planning work.
+- Live runtime verification: NOT RUN; runtime mutation is intentionally deferred to the execution gate.
 
 ## Exact Next Action
 
-Review `docs/icbb/plans/2026-08-28-plane-icbb-customization-discovery.md`,
-select the first ICBB use case, and create an implementation plan before any
-source change or upstream sync.
+After this documentation commit is verified and `PLAT-11` is synchronized, dispatch an executor to run **Task 1 read-only preflight only** from `docs/icbb/plans/2026-09-10-plane-icbb-in-place-image-cutover.md`.
+
+The executor must STOP on any preflight mismatch. Even after preflight/build/override/backup PASS, live Task 5 cutover requires the explicit human gate defined at the end of Task 4.
 
 ## Plan
 
-The authoritative plan is maintained in the AI Knowledge V2 executor
-repository under `docs/superpowers/plans/`.
+Authoritative SPEC:
+`docs/icbb/specs/2026-09-10-plane-icbb-in-place-image-cutover-design.md`
+
+Authoritative implementation plan:
+`docs/icbb/plans/2026-09-10-plane-icbb-in-place-image-cutover.md`
