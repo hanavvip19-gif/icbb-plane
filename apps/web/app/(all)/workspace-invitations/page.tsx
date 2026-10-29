@@ -7,7 +7,7 @@
 import { observer } from "mobx-react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Boxes, Share2, User2 } from "lucide-react";
+import { Boxes, User2 } from "lucide-react";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
@@ -45,34 +45,34 @@ function WorkspaceInvitationPage() {
       : null
   );
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!invitationDetail) return;
-    workspaceService
-      .joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
+    try {
+      await workspaceService.joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
         accepted: true,
         token: token,
-      })
-      .then(() => {
-        if (invitationDetail.email === currentUser?.email) {
-          router.push(`/${invitationDetail.workspace.slug}`);
-        } else {
-          router.push("/");
-        }
-      })
-      .catch((err: unknown) => console.error(err));
+      });
+      if (invitationDetail.email === currentUser?.email) {
+        router.push(`/${invitationDetail.workspace.slug}`);
+      } else {
+        router.push("/");
+      }
+    } catch (err: unknown) {
+      console.error(err);
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!invitationDetail || !token) return;
-    void workspaceService
-      .joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
+    try {
+      await workspaceService.joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
         accepted: false,
         token: token,
-      })
-      .then(() => {
-        router.push("/");
-      })
-      .catch((err: unknown) => console.error(err));
+      });
+      router.push("/");
+    } catch (err: unknown) {
+      console.error(err);
+    }
   };
 
   return (
@@ -86,7 +86,7 @@ function WorkspaceInvitationPage() {
           ) : (
             <EmptySpace
               title={`You have been invited to ${invitationDetail.workspace.name}`}
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work."
             >
               <EmptySpaceItem Icon={CheckIcon} title="Accept" action={handleAccept} />
               <EmptySpaceItem Icon={CloseIcon} title="Ignore" action={handleReject} />
@@ -96,14 +96,14 @@ function WorkspaceInvitationPage() {
           invitationDetail?.accepted ? (
             <EmptySpace
               title={`You are already a member of ${invitationDetail.workspace.name}`}
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work."
             >
               <EmptySpaceItem Icon={Boxes} title="Continue to home" href="/" />
             </EmptySpace>
           ) : (
             <EmptySpace
               title="This invitation link is not active anymore."
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work."
               link={{ text: "Or start from an empty project", href: "/" }}
             >
               {!currentUser ? (
@@ -111,11 +111,6 @@ function WorkspaceInvitationPage() {
               ) : (
                 <EmptySpaceItem Icon={Boxes} title="Continue to home" href="/" />
               )}
-              <EmptySpaceItem
-                Icon={Share2}
-                title="Join our community of active creators"
-                href="https://forum.plane.so"
-              />
             </EmptySpace>
           )
         ) : (

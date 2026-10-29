@@ -97,7 +97,7 @@ The source Compose shows these application build boundaries:
 - `live` → `apps/live/Dockerfile.live`;
 - `proxy` → `apps/proxy/Dockerfile.ce`.
 
-The initial cutover may replace `web`, `admin`, `space`, `api`, `worker`, `beat-worker`, `migrator`, and `live` with fork-built images after the runtime service map is confirmed. `proxy` remains on the existing known-good image unless a fork change actually requires proxy code/config; changing it merely for uniformity is out of scope.
+The initial cutover may replace `web`, `admin`, `space`, `api`, `worker`, `beat-worker`, `migrator`, and `live` with fork-built images after the runtime service map is confirmed. `proxy` and existing MCP sidecar services (`mcp`, `mcp-proxy`) remain on their existing known-good images unless a separate approved change requires replacing them; changing them merely for uniformity is out of scope.
 
 ### 5.3 API image reuse
 
@@ -239,6 +239,7 @@ A rollback is not allowed to use `restore.sh` unless there is separate human app
 ### In scope
 
 - source/build provenance;
+- scoped Community-edition ICBB UI branding and external vendor link/badge cleanup (`apps/web/`, `apps/space/components/common/powered-by.tsx`, `packages/constants/`, `packages/i18n/`, `packages/propel/src/icons/brand/plane-logo.tsx`) with zero `apps/api/`, `apps/admin/`, `apps/live/`, `apps/proxy/`, or migration delta (approved owner scope 2026-10-29);
 - custom application image build;
 - non-secret operations override;
 - in-place application container replacement;
@@ -255,7 +256,7 @@ A rollback is not allowed to use `restore.sh` unless there is separate human app
 - auth/RBAC redesign;
 - domain/gateway redesign;
 - Pro/Business feature enablement;
-- unrelated UI/branding changes;
+- backend/API/live/admin/proxy source changes;
 - destructive data restore.
 
 ## 16. Acceptance Criteria

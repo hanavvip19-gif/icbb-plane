@@ -17,12 +17,7 @@
   "current_upstream_base_observed_at": "2026-08-28T15:25:56Z",
   "last_synced_sha": "3478d4fac44ca67db5233065f9a21f8817eb763b",
   "metadata_boundary": {
-    "versioned": [
-      "PROJECT_CONTEXT.md",
-      "WORKSTATE.md",
-      ".ai/",
-      "docs/icbb/plans/"
-    ],
+    "versioned": ["PROJECT_CONTEXT.md", "WORKSTATE.md", ".ai/", "tools/", "docs/icbb/specs/", "docs/icbb/plans/"],
     "generated": [".generated/REPO_MAP.json"],
     "local": [".agents/checkpoints/"]
   },

@@ -10,9 +10,9 @@ Execute the approved in-place Plane ICBB application-image cutover using SHA-tra
 
 ## Current Phase
 
-**READY FOR AGENT — TASK 1 READ-ONLY PREFLIGHT ONLY.**
+**EXECUTING TASKS 1–4 — PREFLIGHT, BUILD, OPS OVERRIDE, ROLLBACK & BACKUP CHECKPOINT (STOP BEFORE TASK 5).**
 
-Runtime mutation is not yet authorized. The mandatory human cutover gate remains at the end of Task 4 in the implementation plan.
+Runtime container recreation (Task 5) is not yet authorized. The mandatory human cutover gate remains at the end of Task 4 in the implementation plan.
 
 ## Completed
 
@@ -27,8 +27,8 @@ Runtime mutation is not yet authorized. The mandatory human cutover gate remains
 - Approved repository SPEC created at `docs/icbb/specs/2026-09-10-plane-icbb-in-place-image-cutover-design.md`.
 - Executor-ready plan created and hardened at `docs/icbb/plans/2026-09-10-plane-icbb-in-place-image-cutover.md`.
 - Plan self-review removed cross-task shorthand and ambiguous test instructions; no `TBD`, `TODO`, or `Repeat Task` placeholders remain.
-- Foundation cutover plan now requires both `SOURCE_DELTA=EMPTY` and `MIGRATION_DELTA=EMPTY`; either non-empty result is a STOP / `DECISION REQUIRED`.
-- Planning changes are documentation-only; no Plane source code, runtime Compose generated data, secrets, live containers, or persistent volumes were changed by ChatGPT during planning.
+- Foundation cutover plan updated on 2026-10-29 per owner approval (`T04`/`T05`) to authorize the non-API Community UI branding delta (`SPEC §15`: `SOURCE_DELTA=SCOPED_UI_BRANDING`, zero backend/API/admin/live/proxy/dependency delta, `MIGRATION_DELTA=EMPTY`), add `tools/verify.conf` for `./tools/verify-changed.sh`, and align the 15-service Compose runtime map (`mcp` and `mcp-proxy` protected alongside `proxy` and persistent services).
+- Remediated `SEC-01` (`apps/web/vite.config.ts` reverted to upstream baseline `17c44c4898`, removing global `devCookies`, `0.0.0.0`, and hardcoded domain) and polished cross-app `PlaneLogo` data-URI, `PoweredBy`/`ProductUpdatesFooter` suppression, `root.tsx`/`manifest.json`/`site.webmanifest.json`/`packages/constants` metadata, and i18n keys.
 
 ## Approved Architecture Guardrails
 
@@ -51,9 +51,9 @@ Execution remains gated as follows:
 
 1. Task 1 read-only preflight must PASS.
 2. Local source must be clean and equal to `origin/icbb/plane`.
-3. Source delta for this baseline target must be empty.
-4. Migration delta must be empty.
-5. Existing persistent container/mount identities and ICBB logical-data baseline must be captured.
+3. Source delta must stay strictly within approved UI branding scope (`SOURCE_DELTA=SCOPED_UI_BRANDING`, zero backend/API/dependency delta).
+4. Migration delta must be empty (`MIGRATION_DELTA=EMPTY`).
+5. Existing persistent/protected container (`plane-db`, `plane-redis`, `plane-mq`, `plane-minio`, `proxy`, `mcp`, `mcp-proxy`) and mount identities and ICBB logical-data baseline must be captured.
 6. SHA-labelled image builds/provenance verification must PASS.
 7. The non-secret operations override must render without changing protected service hashes or volume names.
 8. Rollback image refs and a fresh backup checkpoint must exist.

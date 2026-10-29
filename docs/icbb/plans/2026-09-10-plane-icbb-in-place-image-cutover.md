@@ -20,10 +20,10 @@
 - Build and deploy only from one clean exact `icbb/plane` Git SHA that matches `origin/icbb/plane`.
 - Custom image tags must be SHA-derived and must carry matching OCI source/revision/version labels.
 - `api`, `worker`, `beat-worker`, and `migrator` use the same API image for one target SHA.
-- `proxy` is protected and is not replaced by this foundation cutover.
+- `proxy`, `mcp`, and `mcp-proxy` are protected non-application/sidecar services and are not replaced by this foundation cutover.
 - This plan does not authorize schema migration. Any delta under `apps/api/plane/db/migrations/` is an immediate STOP / `DECISION REQUIRED` before runtime mutation.
 - Do not alter authentication, RBAC, workspace membership, secrets, host-port exposure, gateway/domain routing, licensing, or entitlement behavior.
-- Billing/upgrade UI presentation is separate scoped feature work; do not unlock Pro/Business behavior here.
+- Owner-approved Community UI branding presentation delta (`SPEC §15`: ICBB logo/favicon/PWA metadata, hiding upstream promotional/edition badges in UI only, zero backend/API/migration/dependency delta) is explicitly in scope; do not unlock Pro/Business behavior here.
 - No secret may be printed, committed, copied into Plane, or stored in evidence.
 - Never use `docker compose down -v`, `docker volume rm`, `docker system prune`, `restore.sh`, force-push, or history rewrite in this plan.
 - Destructive data restore requires separate explicit human approval and is not normal image rollback.
@@ -34,6 +34,7 @@
 ## Task 1: Read-Only Repository and Runtime Preflight
 
 **Files:**
+
 - Read: `/home/usman/projects/platform/plane-fork/PROJECT_CONTEXT.md`
 - Read: `/home/usman/projects/platform/plane-fork/WORKSTATE.md`
 - Read: `/home/usman/projects/platform/plane-fork/docs/icbb/specs/2026-09-10-plane-icbb-in-place-image-cutover-design.md`
@@ -44,6 +45,7 @@
 - Create transient evidence only: `/tmp/plane-icbb-cutover-<target-sha>/`
 
 **Interfaces:**
+
 - Consumes: approved SPEC/plan, both local repositories, existing Docker runtime.
 - Produces: exact target SHA, repository-state proof, service map, container/image baseline, persistent mount baseline, logical-data baseline, upload count, HTTP baseline, source/migration delta result, and `PREFLIGHT=PASS` or STOP evidence.
 
@@ -124,6 +126,8 @@ admin
 api
 beat-worker
 live
+mcp
+mcp-proxy
 migrator
 plane-db
 plane-minio
@@ -143,6 +147,8 @@ admin
 api
 beat-worker
 live
+mcp
+mcp-proxy
 migrator
 plane-db
 plane-minio
@@ -168,7 +174,7 @@ TARGET_SHA="$(git -C "$SRC" rev-parse HEAD)"
 EVIDENCE="/tmp/plane-icbb-cutover-${TARGET_SHA}"
 cd "$OPS"
 : > "$EVIDENCE/pre-containers.tsv"
-for svc in web admin space api worker beat-worker live proxy plane-db plane-redis plane-mq plane-minio; do
+for svc in web admin space api worker beat-worker live proxy mcp mcp-proxy plane-db plane-redis plane-mq plane-minio; do
   cid="$(docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml ps -q "$svc")"
   test -n "$cid"
   printf '%s\t%s\t%s\t%s\n' \
@@ -253,7 +259,7 @@ printf 'HTTP_LOCAL=PASS\n' > "$EVIDENCE/pre-http.txt"
 
 Expected: numeric upload count and HTTP success. If live MinIO does not use `/export`, STOP with mount evidence; do not invent a new path.
 
-- [ ] **Step 8: Prove this foundation target has no Plane source or migration delta**
+- [ ] **Step 8: Prove migration delta is empty and source delta stays strictly within approved UI branding scope**
 
 ```bash
 set -euo pipefail
@@ -270,13 +276,25 @@ git diff --name-only "$BASE_SHA..$TARGET_SHA" -- apps/api/plane/db/migrations \
   > "$EVIDENCE/migration-delta.txt"
 test ! -s "$EVIDENCE/migration-delta.txt"
 git diff --name-only "$BASE_SHA..$TARGET_SHA" -- \
-  apps packages package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json \
+  apps/api apps/admin apps/live apps/proxy package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json \
+  > "$EVIDENCE/backend-or-deps-delta.txt"
+test ! -s "$EVIDENCE/backend-or-deps-delta.txt"
+git diff --name-only "$BASE_SHA..$TARGET_SHA" -- apps packages \
   > "$EVIDENCE/source-delta.txt"
-test ! -s "$EVIDENCE/source-delta.txt"
-printf 'SOURCE_DELTA=EMPTY\nMIGRATION_DELTA=EMPTY\n'
+python3 - "$EVIDENCE/source-delta.txt" <<'PY'
+import re, sys
+allowed = re.compile(
+    r"^(apps/web/(app|core|public)/|apps/space/components/common/powered-by\.tsx$|packages/(constants|i18n|propel)/)"
+)
+bad = [line.strip() for line in open(sys.argv[1]) if line.strip() and not allowed.match(line.strip())]
+if bad:
+    raise SystemExit(f"OUT_OF_SCOPE_SOURCE_DELTA={bad}")
+print("SOURCE_DELTA=SCOPED_UI_BRANDING")
+PY
+printf 'MIGRATION_DELTA=EMPTY\n'
 ```
 
-Expected: both files are empty. This plan establishes the fork-image baseline before separate customization work. Any source or migration delta is a STOP and requires a source-change-specific review/plan; do not deploy it under this baseline cutover plan.
+Expected: `migration-delta.txt` and `backend-or-deps-delta.txt` are empty, and `source-delta.txt` contains only approved non-API UI branding files (`SPEC §15`). Any backend, migration, build-config, or out-of-scope file delta is an immediate STOP.
 
 - [ ] **Step 9: Record preflight PASS**
 
@@ -312,10 +330,12 @@ No runtime application container may be recreated in Task 1.
 ## Task 2: Build and Verify SHA-Traceable Fork Images
 
 **Files:**
+
 - Create local Docker images only.
 - Evidence: `/tmp/plane-icbb-cutover-<target-sha>/built-images.tsv`
 
 **Interfaces:**
+
 - Consumes: Task 1 `PREFLIGHT=PASS`, clean exact target SHA, empty source/migration delta.
 - Produces: five SHA-labelled images: `web`, `admin`, `space`, shared `api`, and `live`.
 
@@ -433,35 +453,35 @@ cat "$EVIDENCE/built-images.tsv"
 
 Expected: five rows; all label assertions pass.
 
-- [ ] **Step 8: Run deterministic baseline verification**
+- [ ] **Step 8: Run deterministic source & baseline verification**
 
-Because Task 1 requires `SOURCE_DELTA=EMPTY`, source-code test suites are `N/A` for this baseline cutover. Verify repository metadata and that the built Python image can import/compile the shipped Plane package:
+Verify repository metadata, execute `./tools/verify-changed.sh` across the UI branding delta (`tsc --noEmit` on `@plane/propel`, `web`, `space`, JSON validity, whitespace hygiene), and verify that the built Python image can import/compile the shipped Plane package:
 
 ```bash
 set -euo pipefail
+export PATH="/home/usman/.npm-global/bin:$PATH"
 cd /home/usman/projects/platform/plane-fork
+BASE_SHA="$(python3 -c "import json; print(json.load(open('.ai/repository.json'))['last_synced_sha'])")"
 TARGET_SHA="$(git rev-parse HEAD)"; TAG="git-${TARGET_SHA:0:12}"
-python3 -m json.tool .ai/repository.json >/dev/null
-python3 -m json.tool .ai/verification-profile.json >/dev/null
-git diff --check
+./tools/verify-changed.sh "$BASE_SHA"
 docker run --rm --entrypoint python "icbb-plane/api:${TAG}" -m compileall -q /code/plane
 ```
 
-Expected: all commands exit `0`. If a future target contains source changes, this task must not be used; return to architecture/planning for source-specific tests.
+Expected: all commands exit `0`.
 
 - [ ] **Step 9: Report build gate**
 
 ```text
 TASK 2 BUILD: PASS|FAIL
 TARGET SHA: <sha>
-SOURCE DELTA: EMPTY
+SOURCE DELTA: SCOPED_UI_BRANDING
 WEB IMAGE: <ref> <image-id>
 ADMIN IMAGE: <ref> <image-id>
 SPACE IMAGE: <ref> <image-id>
 API IMAGE: <ref> <image-id>
 LIVE IMAGE: <ref> <image-id>
 PROVENANCE: PASS|FAIL
-BASELINE VERIFICATION: PASS|FAIL
+DETERMINISTIC VERIFICATION: PASS|FAIL
 NEXT GATE: OPS OVERRIDE|BLOCKED
 ```
 
@@ -470,11 +490,13 @@ NEXT GATE: OPS OVERRIDE|BLOCKED
 ## Task 3: Add the Non-Secret Operations Image Override
 
 **Files:**
+
 - Create: `/home/usman/projects/platform/plane/compose.icbb.override.yaml`
 - Modify: `/home/usman/projects/platform/plane/README.md`
 - Never modify or commit: `/home/usman/projects/platform/plane/plane-app/plane.env`
 
 **Interfaces:**
+
 - Consumes: Task 2 PASS and exact target SHA.
 - Produces: versioned operations override and proof that protected service hashes and volume names are unchanged.
 
@@ -544,7 +566,7 @@ EVIDENCE="/tmp/plane-icbb-cutover-${TARGET_SHA}"
 cd "$OPS"
 : > "$EVIDENCE/base-protected-hashes.txt"
 : > "$EVIDENCE/target-protected-hashes.txt"
-for svc in plane-db plane-redis plane-mq plane-minio proxy; do
+for svc in plane-db plane-redis plane-mq plane-minio proxy mcp mcp-proxy; do
   docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml config --hash "$svc" \
     >> "$EVIDENCE/base-protected-hashes.txt"
   docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml -f compose.icbb.override.yaml config --hash "$svc" \
@@ -591,10 +613,12 @@ Expected: only the override and README are committed. `plane-app/`, backups, sec
 ## Task 4: Establish Rollback Images and Backup Checkpoint
 
 **Files:**
+
 - Create transient: `/tmp/plane-icbb-cutover-<target-sha>/compose.rollback.yaml`
 - Use existing backup helper; do not restore anything.
 
 **Interfaces:**
+
 - Consumes: pre-cutover container IDs from Task 1 and validated override from Task 3.
 - Produces: immutable local rollback tags, render-valid rollback override, fresh backup path, and mandatory human cutover gate.
 
@@ -681,7 +705,7 @@ Return this checkpoint and STOP execution until explicit human approval:
 ```text
 TASKS 1-4: PASS|FAIL
 TARGET SHA: <sha>
-SOURCE DELTA: EMPTY
+SOURCE DELTA: SCOPED_UI_BRANDING
 MIGRATION DELTA: EMPTY
 BUILT IMAGE PROVENANCE: PASS|FAIL
 OPS OVERRIDE RENDER: PASS|FAIL
@@ -700,10 +724,12 @@ Task 5 must not start without explicit approval.
 ## Task 5: Perform the In-Place Application Image Cutover
 
 **Files:**
+
 - Runtime mutation through base Compose + `compose.icbb.override.yaml` only.
 - No persistent-service file/data change.
 
 **Interfaces:**
+
 - Consumes: Tasks 1–4 PASS and explicit human cutover approval.
 - Produces: seven long-running application services recreated on exact fork images, while protected containers and mounts remain unchanged.
 
@@ -719,10 +745,10 @@ test -z "$(git -C "$SRC" status --porcelain)"
 git -C "$SRC" fetch --prune origin icbb/plane
 test "$(git -C "$SRC" rev-parse HEAD)" = "$(git -C "$SRC" rev-parse origin/icbb/plane)"
 grep -qx 'PREFLIGHT=PASS' "$EVIDENCE/preflight.result"
-test ! -s "$EVIDENCE/source-delta.txt"
+test ! -s "$EVIDENCE/backend-or-deps-delta.txt"
 test ! -s "$EVIDENCE/migration-delta.txt"
 cd "$OPS"
-for svc in plane-db plane-redis plane-mq plane-minio proxy; do
+for svc in plane-db plane-redis plane-mq plane-minio proxy mcp mcp-proxy; do
   cid="$(docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml ps -q "$svc")"
   test -n "$cid"
   grep -Fq "$svc"$'\t'"$cid"$'\t' "$EVIDENCE/pre-containers.tsv"
@@ -787,13 +813,13 @@ TARGET_SHA="$(git -C "$SRC" rev-parse HEAD)"
 EVIDENCE="/tmp/plane-icbb-cutover-${TARGET_SHA}"
 cd "$OPS"
 : > "$EVIDENCE/post-protected.tsv"
-for svc in plane-db plane-redis plane-mq plane-minio proxy; do
+for svc in plane-db plane-redis plane-mq plane-minio proxy mcp mcp-proxy; do
   cid="$(docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml -f compose.icbb.override.yaml ps -q "$svc")"
   printf '%s\t%s\n' "$svc" "$cid" >> "$EVIDENCE/post-protected.tsv"
 done
 python3 - "$EVIDENCE/pre-containers.tsv" "$EVIDENCE/post-protected.tsv" <<'PY'
 import sys
-protected = {"plane-db", "plane-redis", "plane-mq", "plane-minio", "proxy"}
+protected = {"plane-db", "plane-redis", "plane-mq", "plane-minio", "proxy", "mcp", "mcp-proxy"}
 pre = {}
 for line in open(sys.argv[1]):
     svc, cid, *_ = line.rstrip("\n").split("\t")
@@ -828,9 +854,11 @@ Expected: success. Any failure in Steps 2–6 means Task 7 rollback must be exec
 ## Task 6: Verify Existing Data Continuity and Acceptance
 
 **Files:**
+
 - Evidence only: `/tmp/plane-icbb-cutover-<target-sha>/post-data.json`, post upload count, and final verification report.
 
 **Interfaces:**
+
 - Consumes: live cutover runtime and pre-cutover evidence.
 - Produces: deterministic logical-data continuity, upload continuity, one-stack evidence, image provenance result, and final acceptance PASS/FAIL.
 
@@ -951,7 +979,7 @@ printf 'IMAGE_PROVENANCE=PASS\n'
 
 Expected: PASS.
 
-- [ ] **Step 6: Verify the licensing/entitlement boundary for this baseline**
+- [ ] **Step 6: Verify the licensing/entitlement boundary for this cutover**
 
 ```bash
 set -euo pipefail
@@ -963,17 +991,24 @@ print(json.load(open('.ai/repository.json'))['last_synced_sha'])
 PY
 )"
 TARGET_SHA="$(git rev-parse HEAD)"
-git diff --name-only "$BASE_SHA..$TARGET_SHA" -- apps packages
+test -z "$(git diff --name-only "$BASE_SHA..$TARGET_SHA" -- apps/api apps/admin apps/live apps/proxy)"
+git diff --name-only "$BASE_SHA..$TARGET_SHA" -- apps packages | python3 -c '
+import re, sys
+allowed = re.compile(r"^(apps/web/(app|core|public)/|apps/space/components/common/powered-by\.tsx$|packages/(constants|i18n|propel)/)")
+bad = [l.strip() for l in sys.stdin if l.strip() and not allowed.match(l.strip())]
+assert not bad, f"Unexpected non-branding delta: {bad}"
+print("LICENSING_ENTITLEMENT_BOUNDARY=PASS")
+'
 ```
 
-Expected: no source files at all for this foundation target, therefore no entitlement/licensing code delta. Any output is a FAIL for this plan and requires review.
+Expected: `LICENSING_ENTITLEMENT_BOUNDARY=PASS` (zero backend/API/admin/live/proxy delta; UI changes restricted strictly to approved Community branding presentation).
 
 - [ ] **Step 7: Produce the acceptance matrix**
 
 ```text
 MIGRATION: N/A — delta empty
-SOURCE DELTA: EMPTY
-UNIT/SOURCE TESTS: N/A — baseline has no source delta
+SOURCE DELTA: SCOPED_UI_BRANDING
+UNIT/SOURCE TESTS: PASS (./tools/verify-changed.sh)
 IMAGE BUILDS: PASS|FAIL
 API COMPILE CHECK: PASS|FAIL
 INTEGRATION: PASS|FAIL
@@ -1000,10 +1035,12 @@ A single FAIL means cutover is not DONE. If runtime functionality is impaired, e
 ## Task 7: Roll Back Application Images on Failure
 
 **Files:**
+
 - Use transient `/tmp/plane-icbb-cutover-<target-sha>/compose.rollback.yaml`.
 - Do not restore persistent data.
 
 **Interfaces:**
+
 - Consumes: rollback override/tags and failed Task 5/6 verification.
 - Produces: seven application services restored to exact pre-cutover image IDs while protected persistent services remain untouched.
 
@@ -1034,13 +1071,13 @@ TARGET_SHA="$(git -C "$SRC" rev-parse HEAD)"
 EVIDENCE="/tmp/plane-icbb-cutover-${TARGET_SHA}"
 cd "$OPS"
 : > "$EVIDENCE/rollback-protected.tsv"
-for svc in plane-db plane-redis plane-mq plane-minio proxy; do
+for svc in plane-db plane-redis plane-mq plane-minio proxy mcp mcp-proxy; do
   cid="$(docker compose --env-file plane-app/plane.env -f plane-app/docker-compose.yaml ps -q "$svc")"
   printf '%s\t%s\n' "$svc" "$cid" >> "$EVIDENCE/rollback-protected.tsv"
 done
 python3 - "$EVIDENCE/pre-containers.tsv" "$EVIDENCE/rollback-protected.tsv" <<'PY'
 import sys
-protected = {"plane-db", "plane-redis", "plane-mq", "plane-minio", "proxy"}
+protected = {"plane-db", "plane-redis", "plane-mq", "plane-minio", "proxy", "mcp", "mcp-proxy"}
 pre = {}
 for line in open(sys.argv[1]):
     svc, cid, *_ = line.rstrip("\n").split("\t")
@@ -1130,11 +1167,13 @@ Do not resume forward cutover after rollback without diagnosis and a new human d
 ## Task 8: Close Repository State, Plane Tracking, and Durable Learning
 
 **Files:**
+
 - Modify: `/home/usman/projects/platform/plane-fork/WORKSTATE.md`
 - Update Plane: existing `PLAT-11`; do not create a duplicate.
 - Update Obsidian only with verified reusable learning linked to `[[Plane ICBB Decision Log]]`.
 
 **Interfaces:**
+
 - Consumes: successful Task 6 or Task 7 rollback evidence.
 - Produces: evidence-aligned repository state, execution tracking, and durable verified learning.
 
