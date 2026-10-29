@@ -5,7 +5,7 @@
       "not_right_now": "Tidak sekarang",
       "create_project": {
         "title": "Buat proyek",
-        "description": "Sebagian besar hal dimulai dengan proyek di Plane.",
+        "description": "Sebagian besar hal dimulai dengan proyek.",
         "cta": "Mulai sekarang"
       },
       "invite_team": {
@@ -19,7 +19,7 @@
         "cta": "Konfigurasi ruang kerja ini"
       },
       "personalize_account": {
-        "title": "Jadikan Plane milik Anda.",
+        "title": "Personalisasi ruang kerja",
         "description": "Pilih gambar Anda, warna, dan lainnya.",
         "cta": "Personalisasi sekarang"
       },

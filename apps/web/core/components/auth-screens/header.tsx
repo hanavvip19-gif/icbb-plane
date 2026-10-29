@@ -8,7 +8,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import Link from "next/link";
 import { useTranslation } from "@plane/i18n";
-import { PlaneLockup } from "@plane/propel/icons";
 import { PageHead } from "@/components/core/page-title";
 import { EAuthModes } from "@/helpers/authentication.helper";
 import { useInstance } from "@/hooks/store/use-instance";
@@ -68,10 +67,17 @@ export function AuthHeaderBase(props: TAuthHeaderBase) {
   const { pageTitle, additionalAction } = props;
   return (
     <>
-      <PageHead title={pageTitle + " - Plane"} />
-      <div className="sticky top-0 flex w-full flex-shrink-0 items-center justify-between gap-6">
-        <Link href="/">
-          <PlaneLockup height={20} width={95} className="text-primary" />
+      <PageHead title={pageTitle + " - Islamic Centre Bin Baz"} />
+      <div className="sticky top-0 flex w-full flex-shrink-0 items-center justify-between gap-6 py-4">
+        <Link href="/" className="flex items-center gap-3">
+          <img
+            src="/icbb-logo.png"
+            alt="Islamic Centre Bin Baz"
+            className="h-9 w-9 shrink-0 object-contain"
+          />
+          <span className="text-[17px] font-semibold tracking-tight text-primary">
+            Islamic Centre Bin Baz
+          </span>
         </Link>
         {additionalAction}
       </div>

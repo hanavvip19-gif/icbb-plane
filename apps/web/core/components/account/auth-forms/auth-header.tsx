@@ -27,30 +27,30 @@ type TAuthHeader = {
 const Titles = {
   [EAuthModes.SIGN_IN]: {
     [EAuthSteps.EMAIL]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "Masuk ke Sistem Manajemen Kerja",
+      subHeader: "Pondok Pesantren Islamic Centre Bin Baz",
     },
     [EAuthSteps.PASSWORD]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "Masuk ke Sistem Manajemen Kerja",
+      subHeader: "Masukkan kata sandi akun Anda.",
     },
     [EAuthSteps.UNIQUE_CODE]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "Verifikasi Kode",
+      subHeader: "Masukkan kode unik yang dikirimkan.",
     },
   },
   [EAuthModes.SIGN_UP]: {
     [EAuthSteps.EMAIL]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "Daftar Akun Baru",
+      subHeader: "Pondok Pesantren Islamic Centre Bin Baz",
     },
     [EAuthSteps.PASSWORD]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "Buat Kata Sandi",
+      subHeader: "Lengkapi keamanan akun Anda.",
     },
     [EAuthSteps.UNIQUE_CODE]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "Verifikasi Kode",
+      subHeader: "Periksa email Anda untuk kode verifikasi.",
     },
   },
 };
